@@ -5,8 +5,8 @@ from django.utils.translation import gettext_lazy as _
 
 
 class TimeStampedMixin(models.Model):
-    created = models.DateTimeField(auto_now_add=True)
-    modified = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         # Этот параметр указывает Django, что этот класс не является представлением таблицы
@@ -57,10 +57,9 @@ class Filmwork(UUIDMixin,TimeStampedMixin):
         MOVIE = _('movie')
         TV_SHOW = _('tv-show')
 
-    # Первым аргументом обычно идёт человекочитаемое название поля
     title = models.CharField(_('title'), max_length=255)
-    # blank=True делает поле необязательным для заполнения.
     description = models.TextField(_('description'), blank=True)
+    file_path = models.TextField(_('file_path'), blank=True)
     creation_date = models.DateField(_('creation_date'))
     rating = models.FloatField(_('rating'), blank=True, 
                                validators=[MinValueValidator(0),
@@ -70,9 +69,7 @@ class Filmwork(UUIDMixin,TimeStampedMixin):
     person = models.ManyToManyField(Person, through='PersonFilmwork')
 
     class Meta:
-        # Ваши таблицы находятся в нестандартной схеме. Это нужно указать в классе модели
         db_table = "content\".\"film_work"
-        # Следующие два поля отвечают за название модели в интерфейсе
         verbose_name = 'Кинопроизведение'
         verbose_name_plural = 'Кинопроизведения'
 
@@ -83,7 +80,7 @@ class Filmwork(UUIDMixin,TimeStampedMixin):
 class GenreFilmwork(UUIDMixin):
     film_work = models.ForeignKey('Filmwork', on_delete=models.CASCADE)
     genre = models.ForeignKey('Genre', on_delete=models.CASCADE)
-    created = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = "content\".\"genre_film_work"
@@ -93,7 +90,7 @@ class PersonFilmwork(UUIDMixin):
     film_work = models.ForeignKey('Filmwork', on_delete=models.CASCADE)
     person = models.ForeignKey('Person', on_delete=models.CASCADE)
     role = models.TextField(_('Role'))
-    created = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = "content\".\"person_film_work"
