@@ -11,18 +11,6 @@ TABLES = {
     'genre_film_work': 'GenreFilmWork',
 }
 
-FIELDS = {
-    'film_work': [
-        'title',
-        'description',
-        'creation_date',
-        'type',
-        'rating',
-        'id',
-    ],
-    'genre': [],
-}
-
 
 @dataclass
 class FilmWork:
@@ -30,14 +18,43 @@ class FilmWork:
     description: str
     creation_date: datetime
     type: str
+    file_path: str
     rating: float = field(default=0.0)
+    created_at: datetime = field(default_factory=datetime.now)
+    updated_at: datetime = field(default_factory=datetime.now)
     id: uuid.UUID = field(default_factory=uuid.uuid4)
 
 
+@dataclass
+class Person:
+    full_name: str
+    created_at: datetime = field(default_factory=datetime.now)
+    updated_at: datetime = field(default_factory=datetime.now)
+    id: uuid.UUID = field(default_factory=uuid.uuid4)
 
 
-#
-#
-# movie = Movie(title='movie', description='new movie', rating=0.0)
-# print(movie)
-# # Movie(title='movie', description='new movie', rating=0.0, id=UUID('6fe77164-1dfe-470d-a32d-071973759539'))
+@dataclass
+class PersonFilmWork:
+    role: str
+    film_work_id: uuid.UUID = field(default_factory=uuid.uuid4)
+    person_id: uuid.UUID = field(default_factory=uuid.uuid4)
+    created_at: datetime = field(default_factory=datetime.now)
+    id: uuid.UUID = field(default_factory=uuid.uuid4)
+
+
+@dataclass
+class Genre:
+    name: str
+    description: str
+    created_at: datetime = field(default_factory=datetime.now)
+    updated_at: datetime = field(default_factory=datetime.now)
+    id: uuid.UUID = field(default_factory=uuid.uuid4)
+
+
+@dataclass
+class GenreFilmWork:
+    film_work_id: uuid.UUID = field(default_factory=uuid.uuid4)
+    genre_id: uuid.UUID = field(default_factory=uuid.uuid4)
+    created_at: datetime = field(default_factory=datetime.now)
+    id: uuid.UUID = field(default_factory=uuid.uuid4)
+

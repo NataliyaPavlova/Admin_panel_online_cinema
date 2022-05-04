@@ -8,7 +8,7 @@ from contextlib import contextmanager
 from config import db
 from loaders.SQLiteLoader import SQLiteLoader
 from loaders.PostgresLoader import PostgresLoader
-from tablesClasses import TABLES, FilmWork#, Person, Genre, PersonFilmWork, GenreFilmWork
+from tablesClasses import TABLES
 
 
 @contextmanager
@@ -27,7 +27,7 @@ def main():
             psycopg2.connect(**dsl, cursor_factory=DictCursor) as pg_conn:
         sqlite_loader = SQLiteLoader(sqlite_conn)
         postgres_loader = PostgresLoader(pg_conn)
-        for table in TABLES.keys(): #, Person, Genre, Person_film_work, Genre_film_work]:
+        for table in TABLES.keys():
             data = sqlite_loader.download_data(table)
             postgres_loader.upload_data(table, data, batch_size)
 

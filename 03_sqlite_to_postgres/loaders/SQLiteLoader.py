@@ -1,6 +1,7 @@
 import sqlite3
 import sys
-from tablesClasses import TABLES, FIELDS, FilmWork#, Person, Genre, PersonFilmWork, GenreFilmWork
+import dataclasses
+from tablesClasses import TABLES, FilmWork, Person, Genre, PersonFilmWork, GenreFilmWork
 
 
 class SQLiteLoader:
@@ -22,9 +23,10 @@ class SQLiteLoader:
             array_dataclasses = []
             class_name = TABLES[table]
             for row in data:
-                row_to_insert = (row[field] for field in FIELDS[table])
-                dataclass_object = getattr(sys.modules[__name__], class_name)(*row_to_insert)
-                array_dataclasses.append(dataclass_object)
+                dataclass_object = getattr(sys.modules[__name__], class_name)
+                fields = dataclass_object.__annotations__.keys()
+                row_to_insert = [row[field] for field in fields]
+                array_dataclasses.append(dataclass_object(*row_to_insert))
 
             print("Loaded {0} table from SQLite3 database. Number of rows = {1}".format(table, number_of_rows))
             return array_dataclasses

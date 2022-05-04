@@ -1,7 +1,7 @@
 import psycopg2
 from psycopg2.extensions import connection as _connection
 from psycopg2.extras import execute_batch
-from tablesClasses import FIELDS, FilmWork
+from dataclasses import astuple
 
 
 class PostgresLoader:
@@ -11,17 +11,18 @@ class PostgresLoader:
 
     def upload_data(self, table: str, data: list, batch_size):
         """Do upload to Postgres"""
+        if not data:
+            return 0
         # Create a list of tuples from the list of dataclass objects
         data_to_insert = []
         for dataclass_object in data:
-            row_to_insert = tuple(getattr(dataclass_object, field) for field in FIELDS[table])
+            row_to_insert = astuple(dataclass_object)
             data_to_insert.append(row_to_insert)
 
+        fields = dataclass_object.__annotations__.keys()
         # form sql statement to execute
-        cols = ','.join(FIELDS[table])
-        cols = "{0},{1},{2}".format(cols, 'created', 'modified')
-        vals = ','.join(['%s' for col in FIELDS[table]])
-        vals = "{0},NOW(),NOW()".format(vals)
+        cols = ','.join(fields)
+        vals = ','.join(['%s' for col in fields])
         query = "INSERT INTO content.{0} ({1}) VALUES ({2}) ON CONFLICT(id) DO NOTHING".format(table, cols, vals)
         cur = self.conn.cursor()
 
