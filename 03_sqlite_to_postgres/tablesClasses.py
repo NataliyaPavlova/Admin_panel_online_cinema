@@ -7,7 +7,7 @@ TABLES = {
     'film_work': 'FilmWork',
     'genre': 'Genre',
     'person': 'Person',
-    'person_film_wok': 'PersonFilmWork',
+    'person_film_work': 'PersonFilmWork',
     'genre_film_work': 'GenreFilmWork',
 }
 
