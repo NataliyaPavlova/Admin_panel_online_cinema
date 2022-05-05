@@ -1,7 +1,7 @@
+"""Migrate data from SQLite db to Postgres db"""
 import sqlite3
 
 import psycopg2
-from psycopg2.extensions import connection as _connection
 from psycopg2.extras import DictCursor
 from contextlib import contextmanager
 
@@ -13,6 +13,7 @@ from tablesClasses import TABLES
 
 @contextmanager
 def conn_context(db_path: str):
+    """Context manager for sqlite connection"""
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     yield conn
@@ -20,6 +21,7 @@ def conn_context(db_path: str):
 
 
 def main():
+    """Main module for data migration"""
     batch_size = 500
     dsl = db.DATABASES['postgres']
 
@@ -34,4 +36,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
