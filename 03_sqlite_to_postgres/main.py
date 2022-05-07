@@ -1,20 +1,20 @@
 """Migrate data from SQLite db to Postgres db"""
+import logging
 import sqlite3
-import psycopg2
-from psycopg2.extras import DictCursor
 from contextlib import contextmanager
-import sys
-import os
 
+import psycopg2
 from config import db
-from loaders.SQLiteLoader import SQLiteLoader
 from loaders.PostgresLoader import PostgresLoader
+from loaders.SQLiteLoader import SQLiteLoader
+from psycopg2.extras import DictCursor
 from tablesClasses import TABLES
 
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.dirname(SCRIPT_DIR))
-
-from tests.check_consistency.tests import Tests
+logging.basicConfig(
+    filename='data_migration_log.log',
+    encoding='utf-8',
+    level=logging.DEBUG
+)
 
 
 @contextmanager
@@ -35,12 +35,9 @@ def main():
             psycopg2.connect(**dsl, cursor_factory=DictCursor) as pg_conn:
         sqlite_loader = SQLiteLoader(sqlite_conn)
         postgres_loader = PostgresLoader(pg_conn)
-        test = Tests(sqlite_conn, pg_conn)
-        for table in TABLES.keys():
-            data = sqlite_loader.download_data(table)
-            postgres_loader.upload_data(table, data, batch_size)
-            test.check_count(table)
-            test.check_values(table)
+        for table, model in TABLES.items():
+            for batch_data in sqlite_loader.download_batch(table, model, batch_size):
+                postgres_loader.upload_data(table, model, batch_data)
 
 
 if __name__ == '__main__':

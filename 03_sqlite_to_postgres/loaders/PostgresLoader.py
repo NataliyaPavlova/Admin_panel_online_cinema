@@ -1,7 +1,9 @@
+import dataclasses
+import logging
+from dataclasses import astuple
+
 import psycopg2
 from psycopg2.extensions import connection as _connection
-from psycopg2.extras import execute_batch
-from dataclasses import astuple
 
 
 class PostgresLoader:
@@ -9,7 +11,7 @@ class PostgresLoader:
     def __init__(self, connection: _connection):
         self.conn = connection
 
-    def upload_data(self, table: str, data: list, batch_size):
+    def upload_data(self, table: str, model: dataclasses, data: list):
         """Do upload to Postgres"""
         if not data:
             return 0
@@ -19,19 +21,21 @@ class PostgresLoader:
             row_to_insert = astuple(dataclass_object)
             data_to_insert.append(row_to_insert)
 
-        fields = dataclass_object.__annotations__.keys()
+        fields = model.__annotations__.keys()
         # form sql statement to execute
         cols = ','.join(fields)
         vals = ','.join(['%s' for col in fields])
-        query = "INSERT INTO content.{0} ({1}) VALUES ({2}) ON CONFLICT(id) DO NOTHING".format(table, cols, vals)
+        query = "INSERT INTO content.{0} ({1}) " \
+                "VALUES ({2}) " \
+                "ON CONFLICT(id) DO NOTHING".format(table, cols, vals)
         cur = self.conn.cursor()
 
         try:
-            execute_batch(cur, query, data_to_insert, page_size=batch_size)
+            cur.executemany(query, data_to_insert)
             self.conn.commit()
             rows_number = len(data)
-            print("Successfully inserted {0} rows into {1} table".format(rows_number, table))
+            logging.info("Successfully inserted {0} rows into {1} table".format(rows_number, table))
 
         except (Exception, psycopg2.DatabaseError) as error:
-            print("Error: {0}".format(error))
+            logging.error("Error: {0}".format(error))
             self.conn.rollback()

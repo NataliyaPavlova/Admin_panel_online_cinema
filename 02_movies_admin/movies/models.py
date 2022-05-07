@@ -1,6 +1,7 @@
 import uuid
+
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from django.core.validators import MinValueValidator,MaxValueValidator
 from django.utils.translation import gettext_lazy as _
 
 
@@ -9,7 +10,6 @@ class TimeStampedMixin(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        # Этот параметр указывает Django, что этот класс не является представлением таблицы
         abstract = True
 
 
@@ -20,16 +20,12 @@ class UUIDMixin(models.Model):
         abstract = True
 
 
-class Genre(UUIDMixin,TimeStampedMixin):
-    # Первым аргументом обычно идёт человекочитаемое название поля
+class Genre(UUIDMixin, TimeStampedMixin):
     name = models.CharField(_('name'), max_length=255)
-    # blank=True делает поле необязательным для заполнения.
     description = models.TextField(_('description'), blank=True)
 
     class Meta:
-        # Ваши таблицы находятся в нестандартной схеме. Это нужно указать в классе модели
         db_table = "content\".\"genre"
-        # Следующие два поля отвечают за название модели в интерфейсе
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
 
@@ -37,13 +33,12 @@ class Genre(UUIDMixin,TimeStampedMixin):
         return self.title
 
 
-class Person(UUIDMixin,TimeStampedMixin):
-    full_name = models.CharField(_('full_name'),max_length=255)
+class Person(UUIDMixin, TimeStampedMixin):
+
+    full_name = models.CharField(_('full_name'), max_length=255)
 
     class Meta:
-        # Ваши таблицы находятся в нестандартной схеме. Это нужно указать в классе модели
         db_table = "content\".\"person"
-        # Следующие два поля отвечают за название модели в интерфейсе
         verbose_name = 'Персона'
         verbose_name_plural = 'Персоны'
 
@@ -51,7 +46,7 @@ class Person(UUIDMixin,TimeStampedMixin):
         return self.full_name
 
 
-class Filmwork(UUIDMixin,TimeStampedMixin):
+class Filmwork(UUIDMixin, TimeStampedMixin):
 
     class Type(models.TextChoices):
         MOVIE = _('movie')
@@ -61,9 +56,7 @@ class Filmwork(UUIDMixin,TimeStampedMixin):
     description = models.TextField(_('description'), blank=True)
     file_path = models.TextField(_('file_path'), blank=True, null=True)
     creation_date = models.DateField(_('creation_date'), blank=True)
-    rating = models.FloatField(_('rating'), blank=True, 
-                               validators=[MinValueValidator(0),
-                                           MaxValueValidator(100)])
+    rating = models.FloatField(_('rating'), blank=True, validators=[MinValueValidator(0), MaxValueValidator(10)])
     type = models.CharField(_('type'), max_length=10, choices=Type.choices)
     genre = models.ManyToManyField(Genre, through='GenreFilmwork')
     person = models.ManyToManyField(Person, through='PersonFilmwork')
@@ -84,14 +77,31 @@ class GenreFilmwork(UUIDMixin):
 
     class Meta:
         db_table = "content\".\"genre_film_work"
+        indexes = [
+            models.Index(fields=['film_work', 'genre'], name='genre_film_work_idx')
+        ]
+        constraints = [
+            models.UniqueConstraint(fields=['film_work', 'genre'], name='unique_genre_film_work')
+        ]
 
 
 class PersonFilmwork(UUIDMixin):
+
+    class Role(models.TextChoices):
+        ACTOR = _('actor')
+        DIRECTOR = _('director')
+        WRITER = _('writer')
+
     film_work = models.ForeignKey('Filmwork', on_delete=models.CASCADE)
     person = models.ForeignKey('Person', on_delete=models.CASCADE)
-    role = models.TextField(_('Role'))
+    role = models.TextField(_('Role'), choices=Role.choices)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = "content\".\"person_film_work"
-
+        indexes = [
+            models.Index(fields=['film_work', 'person', 'role'], name='person_film_work_idx')
+        ]
+        constraints = [
+            models.UniqueConstraint(fields=['film_work', 'person', 'role'], name='unique_person_film_work')
+        ]

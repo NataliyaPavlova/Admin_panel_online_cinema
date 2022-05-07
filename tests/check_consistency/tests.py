@@ -1,4 +1,5 @@
 import sqlite3
+
 from psycopg2.extensions import connection as _connection
 
 
@@ -21,7 +22,7 @@ class Tests:
 
     def check_values(self, table):
         sqlite_stmt = "select * from {0};".format(table)
-        sqlite_select = self.sqlite_cur.execute(sqlite_stmt).fetchall()
+        sqlite_select = self.sqlite_cur.execute(sqlite_stmt)
         for row in sqlite_select:
             sql_dict = dict(row)
             sql_dict.pop('created_at', None)

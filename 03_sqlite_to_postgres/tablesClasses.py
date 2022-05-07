@@ -3,15 +3,6 @@ from dataclasses import dataclass, field
 from datetime import datetime
 
 
-TABLES = {
-    'film_work': 'FilmWork',
-    'genre': 'Genre',
-    'person': 'Person',
-    'person_film_work': 'PersonFilmWork',
-    'genre_film_work': 'GenreFilmWork',
-}
-
-
 @dataclass
 class FilmWork:
     title: str
@@ -58,3 +49,11 @@ class GenreFilmWork:
     created_at: datetime = field(default_factory=datetime.now)
     id: uuid.UUID = field(default_factory=uuid.uuid4)
 
+
+TABLES = {
+    'film_work': FilmWork,
+    'genre': Genre,
+    'person': Person,
+    'person_film_work': PersonFilmWork,
+    'genre_film_work': GenreFilmWork,
+}
